@@ -1,0 +1,1 @@
+Dir[File.dirname(__FILE__) + '/extensions/*'].each { |f| require f }
