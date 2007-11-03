@@ -20,7 +20,7 @@ module Spec
           end
         end
         
-        include Spec::DSL::ExampleModule
+ #       include Spec::DSL::ExampleModule
         include Spec::Rails::Matchers
         include Spec::Integration::Matchers
         include Spec::Integration::DSL::NavigationExampleMethods
