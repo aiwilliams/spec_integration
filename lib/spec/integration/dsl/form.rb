@@ -7,7 +7,12 @@ module Spec
         # The _selector_ argument may be
         #   <tt>a Symbol or String that is the form id</tt>
         #   <tt>a String that is a valid CSS selector</tt>
-        def sees_form(selector, values)
+        def sees_form(selector, values, options = {})
+          options = {
+            :verify_field_enablment => false,
+            :verify_field_values => true
+          }.merge(options)
+          
           selector = selector.to_s
           forms, tried_selector = nil, false
           forms = css_select "form##{selector}" if selector =~ /^[a-zA-Z_\-0-9]+$/
@@ -27,6 +32,12 @@ module Spec
             form_fields = css_select form, "input, select, textarea"
             matching_field = form_fields.detect {|field| field["name"] == name || field["name"] == "#{name}[]"}
             violated "Could not find a form field having the name '#{name}'" unless matching_field
+            if options[:verify_field_values]
+              matching_field["value"].should == value
+            end
+            if options[:verify_field_enablment] && matching_field["disabled"]
+              violated "Form '#{selector}' has a field named '#{name}', but it is disabled. You may not submit values to it."
+            end
             if matching_field["type"] == "file" && form["enctype"] != "multipart/form-data"
               violated "Form '#{selector}' has a file field named '#{name}', but the enctype is not multipart/form-data"
             end
@@ -49,16 +60,28 @@ module Spec
         # intention is that you would generate your form appropriately to
         # include the hidden _method field.
         #
+        # Options:
+        #   <tt>:verify_field_enablment</tt>  - will fail submission if a field is
+        #       disabled. Default is true.
+        #   <tt>:verify_field_values</tt>     - will fail submission if a field does
+        #       not have the provided value already. This is really mostly useful
+        #       when calling _sees_form_ directly. Default is false.
+        #
         # NOTE: action_controller/integration.rb does not allow for posting
         # ActionController::TestUploadedFile. I'd love to see someone make
         # that work.
-        def submits_form(selector, values = {})
+        def submits_form(selector, values = {}, options = {})
+          options = {
+            :verify_field_enablment => true,
+            :verify_field_values    => false
+          }.merge(options)
+          
           if selector.is_a?(Hash) && values.blank?
             raise ArgumentError, "requires (id, values), (css_selector, values), or ({:id_of_form => {}})" if selector.size != 1
             selector, values = selector.keys.first, selector
           end
 
-          form = sees_form(selector, values)
+          form = sees_form(selector, values, options)
           values.update hidden_values(form)
           submit_to form["action"], values, form["method"]
         end
