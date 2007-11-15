@@ -70,7 +70,7 @@ module Spec
         # NOTE: action_controller/integration.rb does not allow for posting
         # ActionController::TestUploadedFile. I'd love to see someone make
         # that work.
-        def submits_form(selector, values = {}, options = {})
+        def submit_form(selector, values = {}, options = {})
           options = {
             :verify_field_enablment => true,
             :verify_field_values    => false

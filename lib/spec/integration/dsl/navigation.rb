@@ -3,10 +3,12 @@ module Spec
     module DSL
 
       module NavigationExampleMethods
-        # Uses css_select to retrieve the anchor having href_or_id. The expects may
-        # indicate:
+        # Uses css_select to retrieve the anchor having href_or_id. The
+        # expects may indicate:
         #
-        #   <tt>:count - An expression indicating the expected number of times the link can appear. The default is '>= 1'.</tt>
+        # Options are:
+        #   <tt>:count</tt> - An expression indicating the expected number of times the link can appear.
+        #                     The default is '>= 1'.
         def find_anchor(href_or_id, expects = {})
           expects = {:count => ">= 1"}.update(expects)
           expects[:count] = "== #{expects[:count]}" if expects[:count].is_a? Integer
@@ -20,11 +22,13 @@ module Spec
           links[0]
         end
         
-        # Clicks the link having either href or id equal to value of :link. If you don't care
-        # whether the link is actually on the page, try using _navigates_to_.
-        # 
-        # :link => <path or id>
-        # :expects => {:count => <expression>}
+        # Clicks the link having either href or id equal to value of :link. If
+        # you don't care whether the link is actually on the page, try using
+        # _navigate_to_.
+        #  
+        # Options are:
+        #   <tt>:link</tt>     - href value or element id
+        #   <tt>:expects</tt>  - {:count => <expression>}. See _find_anchor_.
         def click_on(options)
           should have_navigated_successfully
           options = {
@@ -36,25 +40,25 @@ module Spec
           if onclick = anchor["onclick"]
             if onclick =~ /setAttribute\('name', '_method'\)/
               onclick =~ /setAttribute\('value', '(get|put|delete|post)'\)/
-              self.send $1, anchor["href"]
+              navigate_to anchor["href"], $1
             else
               violated "There is some funky onclick on that link"
             end
           else
-            get anchor["href"]
+            navigate_to anchor["href"]
           end
-          should have_navigated_successfully(anchor["href"])
-          follow_redirect! if response.redirect?
         end
         
-        # Performs _method_ on the specified path, ensuring
-        # that doing so was successful. Will follow redirects.
+        # Performs _method_ on the specified path, ensuring that doing so was
+        # successful. Will follow redirects.
         def navigate_to(path, method = :get, params = nil)
           self.send method, path, params || {}
           follow_redirect! if response.redirect?
           should have_navigated_successfully(path)
         end
         
+        # Submits params to path, using the specified method - :post by
+        # default
         def submit_to(path, params = {}, method = :post)
           navigate_to path, method, params
         end
