@@ -47,7 +47,8 @@ documentation. Of course, it's been modified to specify instead of assert!
 
 === Integration DSL
 
-Spec Integration adds some great tools to make you even more productive. An example explains some of these features best.
+Spec Integration adds some great tools to make you even more productive. An
+example explains some of these features best.
 
   # in spec/integration/signup_spec.rb
   require File.dirname(__FILE__) + "/../spec_helper"
@@ -63,7 +64,9 @@ Spec Integration adds some great tools to make you even more productive. An exam
     response.should be_showing(home_path)
   end
 
-The scenario method is provided by our other plugin, Scenarios(1). It's a great alternative to fixtures. navigate_to, submit_form, and be_showing are a few of the DSL methods provided by the Spec Integration plugin.
+The scenario method is provided by our other plugin, Scenarios(1). It's a
+great alternative to fixtures. navigate_to, submit_form, and be_showing are a
+few of the DSL methods provided by the Spec Integration plugin.
 
 navigate_to does a get, as in the prior test, but it also follows redirects
 and generally ensures that navigating worked - the document isn't missing, the
@@ -78,7 +81,8 @@ be_showing returns a matcher that ensures the response has the expected path.
 
 === More Information
 
-For more information, be sure to look through the documentation over at RubyForge:
+For more information, be sure to look through the documentation over at
+RubyForge:
 
 * http://faithfulcode.rubyforge.org/docs/spec_integration
 
