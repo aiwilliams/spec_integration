@@ -1,0 +1,96 @@
+== Rails Spec Integration Plugin
+
+The RSpec Development team has been working hard to bring Stories to RSpec.
+That is great stuff, and certainly worth looking into. So what does that have
+to do with this plugin?
+
+As of RSpec 1.0.8, it was suggested that if you want to write integration
+tests for Rails, you should continue to write Rails IntegrationTests,
+presumably test/unit style. Now with Stories, rspec_on_rails has begun to
+implement integration testing as a special kind of StoryRunner. This means you
+have to write RSpec Story style tests, implement StepMatchers, and all what
+else Stories entail. Hmmmm.
+
+With the Spec Integration plugin, you get the wonders of RSpec without the
+complexity and expense of Stories. As a bonus, you also get some additional
+great tools for writing robust Rails integration tests.
+
+=== Quick Start
+
+It's easy to get started. Create a directory named 'integration' in your spec
+directory, right alongside your controllers, models, and views spec
+directories. Require your spec_helper at the top of new files in that
+directory. The rest is, as they say, a simple matter of programming ;)
+
+A simple integration spec looks like this:
+
+  # in spec/integration/signup_spec.rb
+  require File.dirname(__FILE__) + "/../spec_helper"
+  
+  describe "Logging in" do
+    scenario :single_person
+    
+    # get the login page
+    get "/login"
+    response.should be_success
+  
+    # post the login and follow through to the home page
+    post "/login", :username => people(:jamis).username,
+      :password => people(:jamis).password
+    follow_redirect!
+    response.should be_success
+    path.should == "/home"
+  end
+
+This is taken straight from integration.rb, the Rails integration test
+documentation. Of course, it's been modified to specify instead of assert!
+
+=== Integration DSL
+
+Spec Integration adds some great tools to make you even more productive. An example explains some of these features best.
+
+  # in spec/integration/signup_spec.rb
+  require File.dirname(__FILE__) + "/../spec_helper"
+
+  describe "Logging in" do
+    scenario :single_person
+    
+    navigate_to login_path
+
+    submit_form :username => people(:jamis).username,
+                :password => people(:jamis).password
+
+    response.should be_showing(home_path)
+  end
+
+The scenario method is provided by our other plugin, Scenarios(1). It's a great alternative to fixtures. navigate_to, submit_form, and be_showing are a few of the DSL methods provided by the Spec Integration plugin.
+
+navigate_to does a get, as in the prior test, but it also follows redirects
+and generally ensures that navigating worked - the document isn't missing, the
+template rendered, etc.
+
+submit_form posts the parameters (actually, it uses the method defined in the
+rendered form's action attribute), follows any redirects, and ensures that all
+that was successful. In fact, it does even more. Check out
+spec/integration/dsl/form.rb to learn more.
+
+be_showing returns a matcher that ensures the response has the expected path.
+
+=== More Information
+
+For more information, be sure to look through the documentation over at RubyForge:
+
+* http://faithfulcode.rubyforge.org/docs/spec_integration
+
+You might also enjoy taking a look at the specs for the plugin:
+
+* http://faithfulcode.rubyforge.org/svn/plugins/trunk/spec_integration/spec
+
+(1) http://faithfulcode.rubyforge.org/svn/plugins/trunk/scenarios
+
+=== License
+
+The Spec Integration plugin is released under the MIT-License and is Copyright
+(c) 2007, Adam Williams and John W. Long. Special thanks to Austin Taylor
+(dotjerky) and Steve Iannopollo for their part in helping us get this plugin
+ready for the public.
