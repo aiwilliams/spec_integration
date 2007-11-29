@@ -7,7 +7,7 @@ module Spec
       
       include ActionController::RecordIdentifier
       
-      class IntegrationExample < Spec::Rails::Example::RailsExample
+      class IntegrationExample < Spec::Rails::Example::RailsExampleGroup
         include Spec::Integration::DSL
         include ActionController::Integration::Runner
         
