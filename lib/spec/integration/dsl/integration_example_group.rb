@@ -7,11 +7,11 @@ module Spec
       
       include ActionController::RecordIdentifier
       
-      class IntegrationExample < Spec::Rails::Example::RailsExampleGroup
+      class IntegrationExample < Spec::Rails::Example::RailsExampleGroup # :nodoc:
         include Spec::Integration::DSL
         include ActionController::Integration::Runner
         
-        def method_missing(sym, *args, &block) # :nodoc:
+        def method_missing(sym, *args, &block)
           return Spec::Matchers::Be.new(sym, *args) if sym.starts_with?("be_")
           return Spec::Matchers::Has.new(sym, *args) if sym.starts_with?("have_")
           super

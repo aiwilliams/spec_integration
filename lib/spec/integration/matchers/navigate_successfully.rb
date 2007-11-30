@@ -37,6 +37,10 @@ module Spec
           end
       end
       
+      # Specify that a response should be a good one: successful, not missing,
+      # no server errors, etc. This is used internally by
+      # Spec::Integration::DSL::NavigationExampleMethods, made available to
+      # you for good pleasure.
       def have_navigated_successfully(where = request.request_uri)
         NavigateSuccessfully.new(where)
       end

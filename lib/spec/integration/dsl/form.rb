@@ -80,19 +80,19 @@ module Spec
             raise ArgumentError, "requires (id, values), (css_selector, values), or ({:id_of_form => {}})" if selector.size != 1
             selector, values = selector.keys.first, selector
           end
-
+          
           form = sees_form(selector, values, options)
           values.update hidden_values(form)
           submit_to form["action"], values, form["method"]
         end
-
-        def hidden_values(form)
+        
+        def hidden_values(form) # :nodoc:
           hiddens = css_select(form, "input[type=hidden]")
           pairs = hiddens.inject({}) {|p,h| p[h["name"]] = h["value"]; p}
           ActionController::UrlEncodedPairParser.new(pairs).result
         end
       end
-
+      
     end
   end
 end

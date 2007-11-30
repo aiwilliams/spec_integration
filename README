@@ -90,7 +90,12 @@ You might also enjoy taking a look at the specs for the plugin:
 
 * http://faithfulcode.rubyforge.org/svn/plugins/trunk/spec_integration/spec
 
-(1) http://faithfulcode.rubyforge.org/svn/plugins/trunk/scenarios
+Browse the complete source code:
+
+* http://faithfulcode.rubyforge.org/svn/plugins/trunk/spec_integration
+
+
+(1) http://faithfulcode.rubyforge.org/docs/scenarios
 
 === License
 

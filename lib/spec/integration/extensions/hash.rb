@@ -3,6 +3,9 @@ module Spec
     module Extensions
 
       module Hash
+        # Extend Hash to give it the ability to be converted to Rails'esque
+        # HTML form field names and values. This is used to verify forms. See
+        # Spec::Integration::DSL::FormExampleMethods.
         def to_fields(fields = {}, namespace = nil)
           each do |key, value|
             key = namespace ? "#{namespace}[#{key}]" : key
@@ -23,4 +26,6 @@ module Spec
   end
 end
 
-Hash.send :include, Spec::Integration::Extensions::Hash
+Hash.module_eval do
+  include Spec::Integration::Extensions::Hash
+end
