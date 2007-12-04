@@ -30,16 +30,18 @@ A simple integration spec looks like this:
   describe "Logging in" do
     scenario :single_person
     
-    # get the login page
-    get "/login"
-    response.should be_success
+    it "should send a user to the home page after login" do
+      # get the login page
+      get "/login"
+      response.should be_success
   
-    # post the login and follow through to the home page
-    post "/login", :username => people(:jamis).username,
-      :password => people(:jamis).password
-    follow_redirect!
-    response.should be_success
-    path.should == "/home"
+      # post the login and follow through to the home page
+      post "/login", :username => people(:jamis).username,
+        :password => people(:jamis).password
+      follow_redirect!
+      response.should be_success
+      path.should == "/home"
+    end
   end
 
 This is taken straight from integration.rb, the Rails integration test
@@ -56,12 +58,16 @@ example explains some of these features best.
   describe "Logging in" do
     scenario :single_person
     
-    navigate_to login_path
-
-    submit_form :username => people(:jamis).username,
-                :password => people(:jamis).password
-
-    response.should be_showing(home_path)
+    before do
+      navigate_to login_path
+    end
+    
+    it "should send a user to the home page after login" do
+      submit_form :username => people(:jamis).username,
+                  :password => people(:jamis).password
+                  
+      response.should be_showing(home_path)
+    end
   end
 
 The scenario method is provided by our other plugin, Scenarios(1). It's a
