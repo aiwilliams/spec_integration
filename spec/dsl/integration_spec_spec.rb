@@ -5,6 +5,14 @@ describe "An integration spec", :type => :integration do
     get "/"
     response.should_not be_nil
     open_session.should_not == @integration_session
+    
+    with_routing do |set|
+      set.draw do |map|
+        map.special_named "/", :controller => "integration_dsl"
+        reset!
+        special_named_path
+      end
+    end
   end
   
   it "should have the form dsl" do
