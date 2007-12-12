@@ -31,7 +31,7 @@ module Spec
             if exception.respond_to? :line_number
               message << "\nOccurred on line #{exception.line_number} in #{exception.file_name}"
             else
-              backtrace = Spec::Runner::QuietBacktraceTweaker.new.tweak_backtrace(example.controller.rescued_exception, nil)
+              backtrace = Spec::Runner::QuietBacktraceTweaker.new.tweak_backtrace(example.controller.rescued_exception)
               message << "\n#{backtrace * "\n"}"
             end
           end

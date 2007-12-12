@@ -17,7 +17,11 @@ unless defined? DATABASE_ADAPTER
   require 'spec'
   require 'spec/rails'
   require 'spec/integration'
-
+  
+  def fail_with(message)
+    raise_error(Spec::Expectations::ExpectationNotMetError, message)
+  end
+  
   require 'logger'
   RAILS_DEFAULT_LOGGER = Logger.new("#{SUPPORT_TEMP}/test.log")
   RAILS_DEFAULT_LOGGER.level = Logger::DEBUG
