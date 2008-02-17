@@ -41,7 +41,7 @@ class ActionController::Integration::Session
   
   def requestify_with_multipart_upload(parameters, prefix=nil)
     raise MultiPartNeededException if ::ActionController::TestUploadedFile === parameters
-    requestify_without_multipart_upload(parameters, prefix=nil)
+    requestify_without_multipart_upload(parameters, prefix)
   end
   alias_method_chain :requestify, :multipart_upload
   
