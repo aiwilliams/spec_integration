@@ -5,7 +5,9 @@ module Spec
       module Hash # :nodoc:
         # Extend Hash to give it the ability to be converted to Rails'esque
         # HTML form field names and values. This is used to verify forms. See
-        # Spec::Integration::DSL::FormExampleMethods.
+        # Spec::Integration::DSL::FormExampleMethods. Tread here lightly: it
+        # understands too much, but breaking it apart doesn't help, since it
+        # is hard to come up with names for methods ;)
         def to_fields(fields = {}, namespace = nil)
           each do |key, value|
             key = namespace ? "#{namespace}[#{key}]" : key

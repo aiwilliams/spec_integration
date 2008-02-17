@@ -57,6 +57,23 @@ describe "submit_form", :type => :controller do
   end
 end
 
+describe 'Expectations parsing query parameters: ' do
+  it 'should work with simple values' do
+    'somekey=value'.should parse_as('somekey' => 'value')
+  end
+  
+  it 'should work with hash values' do
+    'somekey[somekey]=value'.should parse_as('somekey' => {'somekey' => 'value'})
+  end
+  
+  def parse_as(expected)
+    satisfy do |uri|
+      actual = ActionController::AbstractRequest.parse_query_parameters(URI.escape(uri))
+      actual == expected
+    end
+  end
+end
+
 describe 'Hash form extension' do
   it 'should work with simple values' do
     {:somekey => 'value'}.to_fields.should == {
@@ -70,9 +87,12 @@ describe 'Hash form extension' do
     }
   end
   
-  it 'should work with array values' do
+  it 'should work with arrays in hash values' do
     {:somekey => ['value']}.to_fields.should == {
       'somekey[]' => ['value']
+    }
+    {:somekey => {:somekey => ['value']}}.to_fields.should == {
+      'somekey[somekey][]' => ['value']
     }
   end
   
