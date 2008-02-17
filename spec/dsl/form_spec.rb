@@ -77,9 +77,10 @@ describe 'Hash form extension' do
   end
   
   it 'should work with array of hashes' do
-    {:somekey => [{:somekey => 'value'}, {:somekey => 'value2'}, {:otherkey => 'value3'}]}.to_fields.should == {
+    {:somekey => [{:somekey => 'value'}, {:somekey => 'value2'}, {:otherkey => 'value3', :anotherkey => 1}]}.to_fields.should == {
       'somekey[][somekey]'  => ['value', 'value2'],
-      'somekey[][otherkey]' => ['value3']
+      'somekey[][otherkey]' => ['value3'],
+      'somekey[][anotherkey]' => [1]
     }
   end
 end

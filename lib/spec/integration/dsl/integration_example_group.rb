@@ -26,8 +26,8 @@ end
 
 # 97% copied from RubyRedRick's patch at
 # http://dev.rubyonrails.org/attachment/ticket/11091/multi-part-integration.diff?format=raw
-class ActionController::Integration::Session
-  class MultiPartNeededException < Exception
+ActionController::Integration::Session.class_eval do
+  class MultiPartNeededException < Exception # :nodoc:
   end
   
   def process_with_multipart_upload(method, path, parameters = nil, headers = nil)

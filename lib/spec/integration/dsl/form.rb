@@ -5,8 +5,9 @@ module Spec
       module FormExampleMethods
         # Makes assertions about the existance and validity of a form.
         # The _selector_ argument may be
-        #   <tt>a Symbol or String that is the form id</tt>
-        #   <tt>a String that is a valid CSS selector</tt>
+        # <tt>a Symbol or String that is the form id</tt>
+        # <tt>a String that is a valid CSS selector</tt>
+        #
         def sees_form(selector, values, options = {})
           options = {
             :verify_field_enablment => false,
@@ -58,27 +59,26 @@ module Spec
         #
         # This method supports a couple of argument sequences:
         #
-        #   1. selector = 'form', values = {}, options = {}
-        #      This allows you to specify which form to submit when there are
-        #      multiple forms on a page. _selector_ may be the id of the form or
-        #      a valid CSS selector.
+        #   submit_form(selector = 'form', values = {}, options = {})
+        #   submit_form(values = {}, options = {})
         #
-        #   2. values = {}, options = {}
-        #      This allows you to assume that there is only one form on the page.
-        #      It essentially defaults selector to the CSS selector 'form'.
+        # The former allows you to specify which form to submit when there are
+        # multiple forms on a page. _selector_ may be the id of the form or
+        # a valid CSS selector.
+        #
+        # The latter allows you to assume that there is only one form on the page.
+        # It essentially defaults selector to the CSS selector 'form'.
         #
         # You CAN use ActionController::TestUploadFile's as parameters, thanks to
         # some work done by RubyRedRick!
         #
         # Supported options are:
-        #   <tt>:verify_field_enablment</tt>  - will fail submission if a field is
-        #       disabled. Default is true.
-        #   <tt>:verify_field_values</tt>     - will fail submission if a field does
-        #       not have the provided value already. This is really mostly useful
-        #       when calling _sees_form_ directly. Default is false.
         #
-        # TODO: Do not extract hidden field values from the page when they are
-        # provided in the submitted field values.
+        # * <tt>:verify_field_enablment</tt> - will fail submission if a field is
+        #   disabled. Default is true.
+        # * <tt>:verify_field_values</tt> - will fail submission if a field does
+        #   not have the provided value already. This is really mostly useful
+        #   when calling _sees_form_ directly. Default is false.
         #
         def submit_form(*args)
           selector = 'form'
@@ -111,15 +111,16 @@ module Spec
           submit_to form["action"], load_hidden_fields(values, form), form["method"]
         end
         
-        def load_hidden_fields(values, form)
-          hiddens = css_select(form, "input[type=hidden]")
-          return values if hiddens.blank?
-          
-          given_values = values.to_fields
-          hidden_values = hiddens.inject({}) {|p,h| p[h["name"]] = h["value"]; p}
-          given_values.update hidden_values.reject {|k,v| given_values.keys.include?(k.to_s) }
-          ActionController::UrlEncodedPairParser.new(given_values).result
-        end
+        private
+          def load_hidden_fields(values, form)
+            hiddens = css_select(form, "input[type=hidden]")
+            return values if hiddens.blank?
+            
+            given_values = values.to_fields
+            hidden_values = hiddens.inject({}) {|p,h| p[h["name"]] = h["value"]; p}
+            given_values.update hidden_values.reject {|k,v| given_values.keys.include?(k.to_s) }
+            ActionController::UrlEncodedPairParser.new(given_values).result
+          end
       end
       
     end

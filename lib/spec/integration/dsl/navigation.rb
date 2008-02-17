@@ -7,8 +7,9 @@ module Spec
         # expects may indicate:
         #
         # Options are:
-        #   <tt>:count</tt> - An expression indicating the expected number of times the link can appear.
-        #                     The default is '>= 1'.
+        #
+        # * <tt>:count</tt> - An expression indicating the expected number of times the link can appear.
+        #   The default is '>= 1'.
         def find_anchor(href_or_id, expects = {})
           expects = {:count => ">= 1"}.update(expects)
           expects[:count] = "== #{expects[:count]}" if expects[:count].is_a? Integer
@@ -27,8 +28,9 @@ module Spec
         # _navigate_to_.
         #  
         # Options are:
-        #   <tt>:link</tt>     - href value or element id
-        #   <tt>:expects</tt>  - {:count => <expression>}. See _find_anchor_.
+        #
+        # * <tt>:link</tt>     - href value or element id
+        # * <tt>:expects</tt>  - {:count => <expression>}. See _find_anchor_.
         def click_on(options)
           should have_navigated_successfully
           options = {
