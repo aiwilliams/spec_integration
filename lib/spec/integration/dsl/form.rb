@@ -48,48 +48,77 @@ module Spec
           form
         end
 
-        # Submits the form where _selector_ is the id of the form, a valid CSS
-        # selector, or a Hash with a single key that is the id of the form or
-        # a valid CSS selector.
-        #
-        # Values are verified to have fields rendered for them in the current
-        # response body. Hidden fields are extracted from the rendered form
-        # and submitted as well.
+        # Submit a form to the application after verifying it exists in the
+        # current response body. Hidden fields are extracted from the rendered
+        # form and submitted as well.
         #
         # If you are looking to use an alternate HTTP method, realize that the
         # intention is that you would generate your form appropriately to
         # include the hidden _method field.
         #
-        # Options:
+        # This method supports a couple of argument sequences:
+        #
+        #   1. selector = 'form', values = {}, options = {}
+        #      This allows you to specify which form to submit when there are
+        #      multiple forms on a page. _selector_ may be the id of the form or
+        #      a valid CSS selector.
+        #
+        #   2. values = {}, options = {}
+        #      This allows you to assume that there is only one form on the page.
+        #      It essentially defaults selector to the CSS selector 'form'.
+        #
+        # You CAN use ActionController::TestUploadFile's as parameters, thanks to
+        # some work done by RubyRedRick!
+        #
+        # Supported options are:
         #   <tt>:verify_field_enablment</tt>  - will fail submission if a field is
         #       disabled. Default is true.
         #   <tt>:verify_field_values</tt>     - will fail submission if a field does
         #       not have the provided value already. This is really mostly useful
         #       when calling _sees_form_ directly. Default is false.
         #
-        # NOTE: action_controller/integration.rb does not allow for posting
-        # ActionController::TestUploadedFile. I'd love to see someone make
-        # that work.
-        def submit_form(selector, values = {}, options = {})
+        # TODO: Do not extract hidden field values from the page when they are
+        # provided in the submitted field values.
+        #
+        def submit_form(*args)
+          selector = 'form'
+          values   = {}
           options = {
             :verify_field_enablment => true,
             :verify_field_values    => false
-          }.merge(options)
+          }
           
-          if selector.is_a?(Hash) && values.blank?
-            raise ArgumentError, "requires (id, values), (css_selector, values), or ({:id_of_form => {}})" if selector.size != 1
-            selector, values = selector.keys.first, selector
+          case args.size
+          when 1
+            if args.first.is_a?(Hash)
+              values = args.first
+            else
+              selector = args.first
+            end
+          when 2
+            if args.first.is_a?(Hash)
+              values = args.first
+              options.update(args.last)
+            else
+              selector, values = *args
+            end
+          when 3
+            selector, values, = *args
+            options.update(args.last)
           end
           
           form = sees_form(selector, values, options)
-          values.update hidden_values(form)
-          submit_to form["action"], values, form["method"]
+          submit_to form["action"], load_hidden_fields(values, form), form["method"]
         end
         
-        def hidden_values(form) # :nodoc:
+        def load_hidden_fields(values, form)
           hiddens = css_select(form, "input[type=hidden]")
-          pairs = hiddens.inject({}) {|p,h| p[h["name"]] = h["value"]; p}
-          ActionController::UrlEncodedPairParser.new(pairs).result
+          return values if hiddens.blank?
+          
+          given_values = values.to_fields
+          hidden_values = hiddens.inject({}) {|p,h| p[h["name"]] = h["value"]; p}
+          given_values.update hidden_values.reject {|k,v| given_values.keys.include?(k.to_s) }
+          ActionController::UrlEncodedPairParser.new(given_values).result
         end
       end
       
