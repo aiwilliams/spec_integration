@@ -42,14 +42,15 @@ describe "submit_form", :type => :controller do
         <input type="hidden" name="not_overridden" value="from_form" />
         <input type="hidden" name="overridden" value="from_form" />
         <input type="hidden" name="deeply[overridden]" value="from_form" />
-        <input type="hidden" name="deeply[not_overridden]" value="from_form" />
+        <input type="hidden" name="deeply[not_overridden][]" value="from_form1" />
+        <input type="hidden" name="deeply[not_overridden][]" value="from_form2" />
       </form>
     }
     should_receive(:get).with("/hiddens", {
       'not_overridden' => 'from_form',
       'overridden' => 'not_from_form',
       'deeply' => {
-        'not_overridden' => 'from_form',
+        'not_overridden' => [['from_form1', 'from_form2']],
         'overridden' => 'not_from_form'
       }
     })

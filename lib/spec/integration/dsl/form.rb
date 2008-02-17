@@ -85,7 +85,8 @@ module Spec
           values   = {}
           options = {
             :verify_field_enablment => true,
-            :verify_field_values    => false
+            :verify_field_values    => false,
+            :load_hiddens           => true
           }
           
           case args.size
@@ -117,7 +118,15 @@ module Spec
             return values if hiddens.blank?
             
             given_values = values.to_fields
-            hidden_values = hiddens.inject({}) {|p,h| p[h["name"]] = h["value"]; p}
+            hidden_values = hiddens.inject({}) do |memo,h|
+              field_name, field_value = h['name'], h['value']
+              if field_name =~ /\[\]/
+                (memo[field_name] ||= []) << field_value
+              else
+                memo[field_name] = field_value
+              end
+              memo
+            end
             given_values.update hidden_values.reject {|k,v| given_values.keys.include?(k.to_s) }
             ActionController::UrlEncodedPairParser.new(given_values).result
           end
