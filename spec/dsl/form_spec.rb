@@ -46,11 +46,11 @@ describe "submit_form", :type => :controller do
       </form>
     }
     should_receive(:get).with("/hiddens", {
-      'not_overridden' => 'from_form',
-      'overridden' => 'not_from_form',
+      'not_overridden' => ['from_form'],
+      'overridden' => ['not_from_form'],
       'deeply' => {
-        'not_overridden' => 'from_form',
-        'overridden' => 'not_from_form'
+        'not_overridden' => ['from_form'],
+        'overridden' => ['not_from_form']
       }
     })
     submit_form :overridden => 'not_from_form', :deeply => {:overridden => 'not_from_form'}
@@ -77,13 +77,13 @@ end
 describe 'Hash form extension' do
   it 'should work with simple values' do
     {:somekey => 'value'}.to_fields.should == {
-      'somekey' => 'value'
+      'somekey' => ['value']
     }
   end
 
   it 'should work with hash values' do
     {:somekey => {:somekey => 'value'}}.to_fields.should == {
-      'somekey[somekey]' => 'value'
+      'somekey[somekey]' => ['value']
     }
   end
   

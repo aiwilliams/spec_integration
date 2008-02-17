@@ -28,7 +28,7 @@ module Spec
                 end
               end
             else
-              fields[key.to_s] = value
+              fields[key.to_s] = [value]
             end
           end
           fields

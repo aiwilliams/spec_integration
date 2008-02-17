@@ -117,7 +117,7 @@ module Spec
             return values if hiddens.blank?
             
             given_values = values.to_fields
-            hidden_values = hiddens.inject({}) {|p,h| p[h["name"]] = h["value"]; p}
+            hidden_values = hiddens.inject({}) {|p,h| p[h["name"]] = [h["value"]]; p}
             given_values.update hidden_values.reject {|k,v| given_values.keys.include?(k.to_s) }
             ActionController::UrlEncodedPairParser.new(given_values).result
           end
