@@ -50,12 +50,19 @@ module Spec
         end
 
         # Submit a form to the application after verifying it exists in the
-        # current response body. Hidden fields are extracted from the rendered
-        # form and submitted as well.
+        # current response body.
         #
         # If you are looking to use an alternate HTTP method, realize that the
         # intention is that you would generate your form appropriately to
-        # include the hidden _method field.
+        # include the hidden _method field. This will be handled by adding
+        # that value to your form fields.
+        #
+        # Other hidden fields will also be added
+        # unless you pass the option <tt>:include_hidden</tt> with the value
+        # false. You may find this necessary when you have Arrays of Hashes -
+        # they are sufficiently too complex to handle correctly in the
+        # conversion to request parameters, merged with hiddens, and converted
+        # back to the expected data structure.
         #
         # This method supports a couple of argument sequences:
         #
@@ -63,22 +70,27 @@ module Spec
         #   submit_form(values = {}, options = {})
         #
         # The former allows you to specify which form to submit when there are
-        # multiple forms on a page. _selector_ may be the id of the form or
-        # a valid CSS selector.
+        # multiple forms on a page. _selector_ may be the id of the form or a
+        # valid CSS selector.
         #
-        # The latter allows you to assume that there is only one form on the page.
-        # It essentially defaults selector to the CSS selector 'form'.
+        # The latter allows you to assume that there is only one form on the
+        # page. It essentially defaults selector to the CSS selector 'form'.
+        # Note that to pass options, you will need to use parens, as in:
         #
-        # You CAN use ActionController::TestUploadFile's as parameters, thanks to
-        # some work done by RubyRedRick!
+        #   submit_form({}, :include_hidden => false)
+        #
+        # You CAN use ActionController::TestUploadFile's as parameters, thanks
+        # to some work done by RubyRedRick!
         #
         # Supported options are:
         #
-        # * <tt>:verify_field_enablment</tt> - will fail submission if a field is
-        #   disabled. Default is true.
-        # * <tt>:verify_field_values</tt> - will fail submission if a field does
-        #   not have the provided value already. This is really mostly useful
-        #   when calling _sees_form_ directly. Default is false.
+        # * <tt>:include_hidden</tt> - defaults to true. Hidden fields will be
+        #   included into your supplied params.
+        # * <tt>:verify_field_enablment</tt> - will fail submission if a field
+        #   is disabled. Default is true.
+        # * <tt>:verify_field_values</tt> - will fail submission if a field
+        #   does not have the provided value already. This is really mostly
+        #   useful when calling _sees_form_ directly. Default is false.
         #
         def submit_form(*args)
           selector = 'form'
@@ -86,7 +98,7 @@ module Spec
           options = {
             :verify_field_enablment => true,
             :verify_field_values    => false,
-            :load_hiddens           => true
+            :include_hidden         => true
           }
           
           case args.size
@@ -109,25 +121,32 @@ module Spec
           end
           
           form = sees_form(selector, values, options)
-          submit_to form["action"], load_hidden_fields(values, form), form["method"]
+          submit_to form["action"], load_hidden_fields(values, form, options[:include_hidden]), form["method"]
         end
         
         private
-          def load_hidden_fields(values, form)
+          def load_hidden_fields(values, form, include_hidden = true)
             hiddens = css_select(form, "input[type=hidden]")
             return values if hiddens.blank?
             
-            given_values = values.to_fields
-            hidden_values = hiddens.inject({}) do |memo,h|
-              field_name, field_value = h['name'], h['value']
-              if field_name =~ /\[\]/
-                (memo[field_name] ||= []) << field_value
-              else
-                memo[field_name] = field_value
-              end
-              memo
+            hidden_values = hiddens.inject([]) do |memo,h|
+              memo << [h['name'], h['value']]; memo
             end
-            given_values.update hidden_values.reject {|k,v| given_values.keys.include?(k.to_s) }
+            
+            given_values = values.to_fields
+            form_method = hidden_values.assoc("_method")
+            given_values << form_method if form_method
+            
+            if include_hidden
+              given_values.each do |fieldvalue|
+                fieldname = fieldvalue.first
+                hidden_values.delete_if do |hiddenvalue|
+                  fieldname == hiddenvalue.first
+                end
+              end
+              given_values.concat(hidden_values)
+            end
+            
             ActionController::UrlEncodedPairParser.new(given_values).result
           end
       end

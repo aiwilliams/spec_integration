@@ -36,35 +36,60 @@ describe "submit_form", :type => :controller do
     submit_form "order_form"
   end
   
-  it 'should extract hidden fields from form, except for which values are supplied' do
-    response.stub!(:body).and_return %{
-      <form action="/hiddens" method="get">
-        <input type="hidden" name="not_overridden" value="from_form" />
-        <input type="hidden" name="overridden" value="from_form" />
-        <input type="hidden" name="deeply[overridden]" value="from_form" />
-        <input type="hidden" name="deeply[not_overridden][]" value="from_form1" />
-        <input type="hidden" name="deeply[not_overridden][]" value="from_form2" />
-      </form>
-    }
-    should_receive(:get).with("/hiddens", {
-      'not_overridden' => 'from_form',
-      'overridden' => 'not_from_form',
-      'deeply' => {
-        'not_overridden' => [['from_form1', 'from_form2']],
-        'overridden' => 'not_from_form'
+  describe 'hidden fields' do
+    controller_name :integration_dsl
+    
+    before do
+      response.stub!(:body).and_return %{
+        <form action="/hiddens" method="post">
+          <input type="hidden" name="_method" value="put" />
+          <input type="hidden" name="not_overridden" value="from_form" />
+          <input type="hidden" name="overridden" value="from_form" />
+          <input type="hidden" name="deeply[overridden]" value="from_form" />
+          <input type="hidden" name="deeply[not_overridden][]" value="from_form1" />
+          <input type="hidden" name="deeply[not_overridden][]" value="from_form2" />
+        </form>
       }
-    })
-    submit_form :overridden => 'not_from_form', :deeply => {:overridden => 'not_from_form'}
+      @expected = {
+        '_method' => 'put',
+        'not_overridden' => 'from_form',
+        'overridden' => 'not_from_form',
+        'deeply' => {
+          'not_overridden' => ['from_form1', 'from_form2'],
+          'overridden' => 'not_from_form'
+        }
+      }
+      should_receive(:post).with("/hiddens", @expected)
+    end
+    
+    it 'should be overridden when values are supplied' do
+      submit_form :overridden => 'not_from_form', :deeply => {:overridden => 'not_from_form'}
+    end
+    
+    it 'should exclude all but _method when :include_hidden is false' do
+      @expected.delete('not_overridden')
+      @expected['deeply'].delete('not_overridden')
+      submit_form({:overridden => 'not_from_form', :deeply => {:overridden => 'not_from_form'}}, :include_hidden => false)
+    end
   end
 end
 
-describe 'Expectations parsing query parameters: ' do
+describe 'Expectations about parsing query parameters: ' do
   it 'should work with simple values' do
     'somekey=value'.should parse_as('somekey' => 'value')
   end
   
   it 'should work with hash values' do
     'somekey[somekey]=value'.should parse_as('somekey' => {'somekey' => 'value'})
+  end
+  
+  # This one needs explaining. When you have an array of hashes, parameters should be
+  # placed in the most recently created hash. A new hash is created when a key, like
+  # 'one' in this test, re-occurs.
+  it 'should correctly place additional attributes in the order found' do
+    'level1[][one]=1&level1[][two]=2&level1[][one]=3&level1[][two]=4&level1[][three]=5'.should parse_as(
+      {'level1' => [{'one' => '1', 'two' => '2'}, {'one' => '3', 'two' => '4', 'three' => '5'}]}
+    )
   end
   
   def parse_as(expected)
@@ -77,31 +102,25 @@ end
 
 describe 'Hash form extension' do
   it 'should work with simple values' do
-    {:somekey => 'value'}.to_fields.should == {
-      'somekey' => 'value'
-    }
+    {:somekey => 'value'}.to_fields.should == [['somekey', 'value']]
   end
 
   it 'should work with hash values' do
-    {:somekey => {:somekey => 'value'}}.to_fields.should == {
-      'somekey[somekey]' => 'value'
-    }
+    {:somekey => {:somekey => 'value'}}.to_fields.should == [['somekey[somekey]', 'value']]
   end
   
   it 'should work with arrays in hash values' do
-    {:somekey => ['value']}.to_fields.should == {
-      'somekey[]' => ['value']
-    }
-    {:somekey => {:somekey => ['value']}}.to_fields.should == {
-      'somekey[somekey][]' => ['value']
-    }
+    {:somekey => ['value']}.to_fields.should == [['somekey[]', 'value']]
+    {:somekey => {:somekey => ['value']}}.to_fields.should == [['somekey[somekey][]', 'value']]
   end
   
   it 'should work with array of hashes' do
-    {:somekey => [{:somekey => 'value'}, {:somekey => 'value2'}, {:otherkey => 'value3', :anotherkey => 1}]}.to_fields.should == {
-      'somekey[][somekey]'  => ['value', 'value2'],
-      'somekey[][otherkey]' => ['value3'],
-      'somekey[][anotherkey]' => [1]
-    }
+    {:somekey => [{:somekey => 'value'}, {:somekey => 'value2'}, {:somekey => 'value4', :otherkey => 'value3', :anotherkey => 1}]}.to_fields.should == [
+      ['somekey[][somekey]', 'value'],
+      ['somekey[][somekey]', 'value2'],
+      ['somekey[][somekey]', 'value4'],
+      ['somekey[][otherkey]', 'value3'],
+      ['somekey[][anotherkey]', 1]
+    ]
   end
 end

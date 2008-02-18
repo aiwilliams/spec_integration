@@ -3,35 +3,39 @@ module Spec
     module Extensions
 
       module Hash # :nodoc:
-        # Extend Hash to give it the ability to be converted to Rails'esque
-        # HTML form field names and values. This is used to verify forms. See
-        # Spec::Integration::DSL::FormExampleMethods. Tread here lightly: it
-        # understands too much, but breaking it apart doesn't help, since it
-        # is hard to come up with names for methods ;)
-        def to_fields(fields = {}, namespace = nil)
-          each do |key, value|
-            key = namespace ? "#{namespace}[#{key}]" : key
-            case value
-            when ::Hash
-              value.to_fields(fields, key)
-            when ::Array
-              value.each do |v|
-                case v
-                when ::Hash
-                  v.each do |key2, value2|
-                    rebuild = fields["#{key}[][#{key2}]"] ||= []
-                    rebuild << value2
-                  end
-                else
-                  rebuild = fields["#{key}[]"] ||= []
-                  rebuild << v
-                end
-              end
-            else
-              fields[key.to_s] = value
-            end
+        def name_with_prefix(prefix, name)
+          prefix ? "#{prefix}[#{name}]" : name.to_s
+        end
+
+        def requestify(parameters, collector = [], prefix=nil)
+          if Hash === parameters
+            return collector if parameters.empty?
+            parameters.each { |k,v| requestify(v, collector, name_with_prefix(prefix, k)) }
+          elsif Array === parameters
+            parameters.each { |v| requestify(v, collector, name_with_prefix(prefix, "")) }
+          elsif prefix.nil?
+            collector
+          else
+            collector << [prefix, parameters]
           end
-          fields
+          collector
+        end
+        
+        # Extend Hash to give it the ability to be converted to Rails'esque
+        # HTML form field names and values. This is used to verify forms.
+        #
+        # The return value is an Array of key value pairs. This is to maintain
+        # the behaviour that a browser will submit enabled fields in the order
+        # they are found in the document. Rails leverages that behaviour to
+        # construct data structures from the request parameters. Specifically,
+        # when you have an Array of Hashes, the Hash a parameter appears in
+        # depends on something like this:
+        #
+        #   one[][one]=1&one[][two]=2&one[][three]=3one[][one]=4&one[][five]=5
+        #   => [{'one' => 1, 'two' => 2, 'three' => 3}{'one' => 4, 'five' => 5}]
+        #
+        def to_fields
+          requestify(self)
         end
       end
 
