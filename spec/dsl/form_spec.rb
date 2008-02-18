@@ -67,8 +67,9 @@ describe "submit_form", :type => :controller do
     end
     
     it 'should remove in an array when overridden' do
-      @expected['deeply']['not_overridden'] = 'value'
-      submit_form :deeply => {:not_overridden => 'value'}
+      @expected['deeply'] = {'not_overridden' => ['value'], 'overridden' => 'from_form'}
+      @expected['overridden'] = 'from_form'
+      submit_form :deeply => {:not_overridden => ['value']}
     end
     
     it 'should exclude all but _method when :include_hidden is false' do
@@ -120,12 +121,11 @@ describe 'Hash form extension' do
   end
   
   it 'should work with array of hashes' do
-    {:somekey => [{:somekey => 'value'}, {:somekey => 'value2'}, {:somekey => 'value4', :otherkey => 'value3', :anotherkey => 1}]}.to_fields.should == [
-      ['somekey[][somekey]', 'value'],
-      ['somekey[][somekey]', 'value2'],
-      ['somekey[][somekey]', 'value4'],
-      ['somekey[][otherkey]', 'value3'],
-      ['somekey[][anotherkey]', 1]
-    ]
+    fields = {:somekey => [{:somekey => 'value'}, {:somekey => 'value2'}, {:somekey => 'value4', :otherkey => 'value3', :anotherkey => 1}]}.to_fields
+    fields.should include(['somekey[][somekey]', 'value'])
+    fields.should include(['somekey[][somekey]', 'value2'])
+    fields.should include(['somekey[][somekey]', 'value4'])
+    fields.should include(['somekey[][otherkey]', 'value3'])
+    fields.should include(['somekey[][anotherkey]', 1])
   end
 end
