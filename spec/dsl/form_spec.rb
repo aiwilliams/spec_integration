@@ -66,6 +66,11 @@ describe "submit_form", :type => :controller do
       submit_form :overridden => 'not_from_form', :deeply => {:overridden => 'not_from_form'}
     end
     
+    it 'should remove in an array when overridden' do
+      @expected['deeply']['not_overridden'] = 'value'
+      submit_form :deeply => {:not_overridden => 'value'}
+    end
+    
     it 'should exclude all but _method when :include_hidden is false' do
       @expected.delete('not_overridden')
       @expected['deeply'].delete('not_overridden')
