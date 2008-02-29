@@ -55,7 +55,7 @@ module Spec
         # successful. Will follow redirects.
         def navigate_to(path, method = :get, params = nil)
           self.send method, path, params || {}
-          follow_redirect! if response.redirect?
+          follow_redirect! while response.redirect?
           should have_navigated_successfully(path)
         end
         
