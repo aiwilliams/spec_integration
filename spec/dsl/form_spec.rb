@@ -1,5 +1,4 @@
 require File.dirname(__FILE__) + '/../spec_helper'
-require 'integration_dsl_controller'
 
 describe "submit_form", :type => :controller do
   include Spec::Integration::DSL

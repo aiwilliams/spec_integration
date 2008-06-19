@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/../spec_helper'
-require 'integration_dsl_controller'
 
-describe Spec::Integration::DSL, "find_anchor", :type => :controller do
+describe "find_anchor", :type => :controller do
+  include Spec::Integration::DSL
   controller_name :integration_dsl
   
   before do
@@ -19,7 +19,8 @@ describe Spec::Integration::DSL, "find_anchor", :type => :controller do
   end
 end
 
-describe Spec::Integration::DSL, "have_navigated_successfully", :type => :controller do
+describe "have_navigated_successfully", :type => :controller do
+  include Spec::Integration::DSL
   controller_name :integration_dsl
   
   it "should report the exception in the failure message" do
