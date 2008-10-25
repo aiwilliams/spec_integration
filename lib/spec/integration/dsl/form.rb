@@ -121,7 +121,7 @@ module Spec
           end
           
           form = sees_form(selector, values, options)
-          submit_to form["action"], load_hidden_fields(values, form, options[:include_hidden]), form["method"]
+          submit_to form["action"], load_hidden_fields(values, form, options[:include_hidden]), form["method"], options
         end
         
         private

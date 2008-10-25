@@ -26,14 +26,24 @@ module Spec
         
         private
           def extract_exception(example)
-            exception = example.controller.rescued_exception
-            message = "Unexpected #{example.response.response_code} error #{example.request.method}'ing #{@where}\n#{exception.message}"
-            if exception.respond_to? :line_number
-              message << "\nOccurred on line #{exception.line_number} in #{exception.file_name}"
+            exception_in_controller_action = example.controller.rescued_exception
+            message = "Unexpected #{example.response.response_code} error #{example.request.method}'ing #{@where}"
+            if exception_in_controller_action
+              message << "\n#{exception_in_controller_action.message}"
+              if exception_in_controller_action.respond_to? :line_number
+                message << "\nOccurred on line #{exception_in_controller_action.line_number} in #{exception_in_controller_action.file_name}"
+              else
+                backtrace = Spec::Runner::QuietBacktraceTweaker.new.tweak_backtrace(exception_in_controller_action)
+                message << "\n#{backtrace * "\n"}"
+              end
             else
-              backtrace = Spec::Runner::QuietBacktraceTweaker.new.tweak_backtrace(example.controller.rescued_exception)
-              message << "\n#{backtrace * "\n"}"
+              if example.response.body =~ %r{<h1>(.*?)</h1>\s*?<pre>(.*?)</pre>}mi
+                first, second = $1, $2
+                message << "\n\n#{first.gsub(/\s+/m, ' ').strip}\n\n#{second}"
+              end
+              message << "\n\n#{$1}" if example.response.body =~ %r{<div id="Full-Trace".*?>\s*?<pre><code>(.*?)</code></pre>\s*</div>}mi
             end
+            message
           end
       end
       
