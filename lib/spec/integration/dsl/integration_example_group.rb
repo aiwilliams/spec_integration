@@ -12,6 +12,7 @@ module Spec
         include ActionController::Integration::Runner
         
         cattr_accessor :during_integration_example
+        attr_reader :integration_session
         
         before :all do
           IntegrationExample::during_integration_example = true

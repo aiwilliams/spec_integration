@@ -37,7 +37,7 @@ module Spec
         #   href but have methods of GET and DELETE). Defaults to :get.
         #
         def click_on(options)
-          should have_navigated_successfully
+          integration_session.should have_navigated_successfully
           options = {
             :link => nil,
             :expects => {:count => ">= 1"},
@@ -82,7 +82,7 @@ module Spec
         def navigate_to(path, method = :get, params = nil, options = {})
           self.send method, path, params || {}, options
           follow_redirect! while response.redirect?
-          should have_navigated_successfully(path)
+          integration_session.should have_navigated_successfully(path)
         end
         
         # Submits params to path, using the specified method - :post by
