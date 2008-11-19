@@ -1,8 +1,10 @@
-require File.expand_path(File.dirname(__FILE__) + "/../testing/plugit_descriptor")
+SPEC_ROOT = File.expand_path(File.dirname(__FILE__))
+$LOAD_PATH << SPEC_ROOT # for application.rb
 
-def fail_with(message)
-  raise_error(Spec::Expectations::ExpectationNotMetError, message)
-end
+require "#{SPEC_ROOT}/../plugit/descriptor"
+
+RAILS_ROOT = "#{SPEC_ROOT}/.."
+$LOAD_PATH << "#{RAILS_ROOT}/lib"
 
 require 'spec/integration'
 require 'integration_dsl_controller'
