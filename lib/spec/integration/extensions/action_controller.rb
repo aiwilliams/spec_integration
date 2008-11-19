@@ -4,7 +4,16 @@
 # http://rspec.info/rdoc-rails/classes/Spec/Rails/Example/ControllerExampleGroup.html)
 ActionController::Base.class_eval do
   alias_method :rescue_action, :rescue_action_without_fast_errors
-
+  
+  def use_rails_error_handling_with_integration_support?
+    if Spec::Integration::DSL::IntegrationExample::during_integration_example
+      true
+    else
+      use_rails_error_handling_without_integration_support?
+    end
+  end
+  alias_method_chain :use_rails_error_handling?, :integration_support
+  
   attr_reader :rescued_exception
   def rescue_action_with_integration_support(e)
     @rescued_exception = e

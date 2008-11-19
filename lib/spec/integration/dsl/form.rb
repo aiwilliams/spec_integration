@@ -121,6 +121,7 @@ module Spec
           end
           
           form = sees_form(selector, values, options)
+          violated "Form '#{selector}' is missing an 'action' attribute" if form["action"].blank?
           submit_to form["action"], load_hidden_fields(values, form, options[:include_hidden]), form["method"], options
         end
         

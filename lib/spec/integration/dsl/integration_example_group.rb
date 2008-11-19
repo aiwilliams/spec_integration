@@ -11,6 +11,16 @@ module Spec
         include Spec::Integration::DSL
         include ActionController::Integration::Runner
         
+        cattr_accessor :during_integration_example
+        
+        before :all do
+          IntegrationExample::during_integration_example = true
+        end
+        
+        after :all do
+          IntegrationExample::during_integration_example = false
+        end
+        
         def method_missing(sym, *args, &block)
           return Spec::Matchers::Be.new(sym, *args) if sym.starts_with?("be_")
           return Spec::Matchers::Has.new(sym, *args) if sym.starts_with?("have_")

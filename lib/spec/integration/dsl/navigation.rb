@@ -55,7 +55,7 @@ module Spec
                 violated "There is some funky onclick on that link"
               end
             else
-              navigate_to anchor["href"]
+              navigate_to CGI.unescapeHTML(anchor["href"])
             end
           else
             anchor = nil
