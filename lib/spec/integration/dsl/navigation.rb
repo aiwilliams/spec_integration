@@ -44,18 +44,19 @@ module Spec
             :method => :get
           }.update(options)
           
+          navigation_params = nil
           anchors = find_anchors(options[:link], options[:expects])
           if anchors.size == 1
             anchor = anchors.first
             if onclick = anchor["onclick"]
               if onclick =~ /setAttribute\('name', '_method'\)/
                 onclick =~ /setAttribute\('value', '(get|put|delete|post)'\)/
-                navigate_to anchor["href"], $1
+                navigation_params = [anchor["href"], $1]
               else
                 violated "There is some funky onclick on that link"
               end
             else
-              navigate_to CGI.unescapeHTML(anchor["href"])
+              navigation_params = [anchor["href"]]
             end
           else
             anchor = nil
@@ -73,8 +74,10 @@ module Spec
               end
             end
             violated "No anchor found with method #{option[:method]}" if anchor.nil?
-            navigate_to anchor["href"], options[:method]
+            navigation_params = [anchor["href"], options[:method]]
           end
+          href = navigation_params.shift
+          navigate_to *[CGI.unescapeHTML(href), navigation_params].compact
         end
         
         # Performs _method_ on the specified path, ensuring that doing so was
