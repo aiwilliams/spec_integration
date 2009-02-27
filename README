@@ -1,39 +1,28 @@
 == Rails Spec Integration Plugin
 
-The RSpec Development team has been working hard to bring Stories to RSpec.
-That is great stuff, and certainly worth looking into. So what does that have
-to do with this plugin?
+The Spec Integration plugin brings together RSpec on Rails and Rails integration
+testing, while also adding a number of very useful new matchers and some more
+integration testing DSL methods.
 
-As of RSpec 1.0.8, it was suggested that if you want to write integration
-tests for Rails, you should continue to write Rails IntegrationTests,
-presumably test/unit style. Now with Stories, rspec_on_rails has begun to
-implement integration testing as a special kind of StoryRunner. This means you
-have to write RSpec Story style tests, implement StepMatchers, and all what
-else Stories entail. Hmmmm.
+=== Installation
 
-With the Spec Integration plugin, you get the wonders of RSpec without the
-complexity and expense of Stories. As a bonus, you also get some additional
-great tools for writing robust Rails integration tests.
-
-The Spec Integration plugin changes controller exception handling so it should
-not be loaded when your controller specs depend on that. I.e. it is not possible
-to cleanly run integration specs and controller specs as part of one test suite.
+script/plugin install git://github.com/aiwilliams/spec_integration.git
 
 === Quick Start
 
 It's easy to get started. Create a directory named 'integration' in your spec
 directory, right alongside your controllers, models, and views spec
-directories. Require your spec_helper at the top of new files in that
-directory. The rest is, as they say, a simple matter of programming ;)
+directories. In your spec_helper:
+
+  require 'spec/integration'
 
 A simple integration spec looks like this:
 
   # in spec/integration/signup_spec.rb
   require File.dirname(__FILE__) + "/../spec_helper"
-  require 'spec/integration'
   
   describe "Logging in" do
-    scenario :single_person
+    dataset :single_person
     
     it "should send a user to the home page after login" do
       # get the login page
@@ -59,10 +48,9 @@ example explains some of these features best.
 
   # in spec/integration/signup_spec.rb
   require File.dirname(__FILE__) + "/../spec_helper"
-  require 'spec/integration'
   
   describe "Logging in" do
-    scenario :single_person
+    dataset :single_person
     
     before do
       navigate_to login_path
@@ -76,7 +64,7 @@ example explains some of these features best.
     end
   end
 
-The scenario method is provided by our other plugin, Scenarios(1). It's a
+The dataset method is provided by another plugin, Dataset(1). It's a
 great alternative to fixtures. navigate_to, submit_form, and be_showing are a
 few of the DSL methods provided by the Spec Integration plugin.
 
@@ -93,25 +81,18 @@ be_showing returns a matcher that ensures the response has the expected path.
 
 === More Information
 
-For more information, be sure to look through the documentation over at
-RubyForge:
+(1) http://github.com/aiwilliams/dataset
 
-* http://faithfulcode.rubyforge.org/docs/spec_integration
+== Credits
 
-You might also enjoy taking a look at the specs for the plugin:
+Written by [Adam Williams](http://github.com/aiwilliams).
+    
+Contributors:
 
-* http://faithfulcode.rubyforge.org/svn/plugins/trunk/spec_integration/spec
+- [John Long](http://github.com/jlong)
+- [Steve Iannopollo](http://github.com/siannopollo)
+- [Austin Taylor](http://github.com/dotjerky)
 
-Browse the complete source code:
+---
 
-* http://faithfulcode.rubyforge.org/svn/plugins/trunk/spec_integration
-
-
-(1) http://faithfulcode.rubyforge.org/docs/scenarios
-
-=== License
-
-The Spec Integration plugin is released under the MIT-License and is Copyright
-(c) 2007, Adam Williams and John W. Long. Special thanks to Austin Taylor
-(dotjerky) and Steve Iannopollo for their part in helping us get this plugin
-ready for the public.
+Spec Integration is released under the MIT-License and is Copyright (c)2007-2009 Adam Williams.
