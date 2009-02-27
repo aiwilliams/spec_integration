@@ -3,15 +3,15 @@ module Spec
     module Matchers
       
       class NavigateSuccessfully #:nodoc:
-        def initialize(where)
-          @where = where
+        def initialize(example, where)
+          @example, @where = example, where
         end
         
-        def matches?(example)
-          if example.response.error? || example.response.body =~ /Exception caught/
-            @failure_message = extract_exception(example)
-          elsif example.response.missing?
-            @failure_message = "Missing document #{example.request.method}'ing #{@where}"
+        def matches?(response)
+          if response.error? || response.body =~ /Exception caught/
+            @failure_message = extract_exception(@example)
+          elsif response.missing?
+            @failure_message = "Missing document #{@example.request.method}'ing #{@where}"
           end
           @failure_message.nil?
         end
@@ -48,11 +48,10 @@ module Spec
       end
       
       # Specify that a response should be a good one: successful, not missing,
-      # no server errors, etc. This is used internally by
-      # Spec::Integration::DSL::NavigationExampleMethods, made available to
-      # you for good pleasure.
+      # no server errors, etc.
+      #
       def have_navigated_successfully(where = request.request_uri)
-        NavigateSuccessfully.new(where)
+        NavigateSuccessfully.new(self, where)
       end
       
     end

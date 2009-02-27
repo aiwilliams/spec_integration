@@ -2,6 +2,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 describe "find_anchors", :type => :controller do
   include Spec::Integration::DSL
+  include Spec::Integration::Matchers
   controller_name :integration_dsl
   
   before do
@@ -19,17 +20,14 @@ describe "find_anchors", :type => :controller do
   end
 end
 
-describe "have_navigated_successfully", :type => :controller do
-  include Spec::Integration::DSL
-  controller_name :integration_dsl
-  
+describe "have_navigated_successfully", :type => :integration do
   it "should report the exception in the failure message" do
     with_routing do |set|; set.draw do |map|
-      map.connect ':controller/:action/:id'
-      get :exploding
+      map.connect '/exploding', :controller => 'integration_dsl', :action => 'exploding'
+      get '/exploding'
       lambda do
-        should have_navigated_successfully
-      end.should fail_with(/This will blow up!/)
+        response.should have_navigated_successfully
+      end.should raise_error(Spec::Expectations::ExpectationNotMetError, /This will blow up!/)
     end; end
   end
 end

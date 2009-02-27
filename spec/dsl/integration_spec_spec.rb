@@ -21,11 +21,11 @@ describe "An integration spec", :type => :integration do
   end
   
   it "should have the form dsl" do
-    should respond_to("submit_form")
+    lambda { submit_form }.should_not raise_error(NoMethodError, /submit_form/)
   end
   
   it "should have the navigation dsl" do
-    should respond_to("navigate_to")
+    lambda { navigate_to }.should_not raise_error(NoMethodError, /navigate_to/)
   end
   
   it "should have the showing matchers" do

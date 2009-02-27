@@ -2,6 +2,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 describe "submit_form", :type => :controller do
   include Spec::Integration::DSL
+  include Spec::Integration::Matchers
   controller_name :integration_dsl
   
   before do
@@ -13,12 +14,12 @@ describe "submit_form", :type => :controller do
   end
   
   it "should find the form having the given id" do
-    should_receive(:post).with("/cancel", {})
+    should_receive(:post).with("/cancel", {}, an_instance_of(Hash))
     submit_form "cancel_form"
   end
   
   it 'should find the form matching the given css selector' do
-    should_receive(:post).with("/repeat", {})
+    should_receive(:post).with("/repeat", {}, an_instance_of(Hash))
     submit_form '.special'
   end
   
@@ -26,12 +27,12 @@ describe "submit_form", :type => :controller do
     response.stub!(:body).and_return %{
       <form action="/single" method="get"></form>
     }
-    should_receive(:get).with('/single', {})
+    should_receive(:get).with('/single', {}, an_instance_of(Hash))
     submit_form
   end
   
   it "should use method of the rendered form" do
-    should_receive(:get).with("/order", {})
+    should_receive(:get).with("/order", {}, an_instance_of(Hash))
     submit_form "order_form"
   end
   
@@ -58,7 +59,7 @@ describe "submit_form", :type => :controller do
           'overridden' => 'not_from_form'
         }
       }
-      should_receive(:post).with("/hiddens", @expected)
+      should_receive(:post).with("/hiddens", @expected, an_instance_of(Hash))
     end
     
     it 'should be overridden when values are supplied' do
@@ -99,7 +100,7 @@ describe 'Expectations about parsing query parameters: ' do
   
   def parse_as(expected)
     satisfy do |uri|
-      actual = ActionController::AbstractRequest.parse_query_parameters(URI.escape(uri))
+      actual = ActionController::UrlEncodedPairParser.parse_query_parameters(URI.escape(uri))
       actual == expected
     end
   end

@@ -1,10 +1,12 @@
-require File.expand_path(File.dirname(__FILE__) + '/testing/plugit_descriptor')
+$:.unshift(File.join(File.dirname(__FILE__), 'lib'))
 
-require 'rake/rdoctask'
-Rake::RDocTask.new(:doc) do |r|
-  r.title = "Rails Scenarios Plugin"
-  r.main = "README"
-  r.options << "--line-numbers"
-  r.rdoc_files.include("README", "LICENSE", "lib/**/*.rb")
-  r.rdoc_dir = "doc"
+require 'rubygems'
+require 'spec/rake/spectask'
+
+task :default => :spec
+
+desc "Run all specs"
+Spec::Rake::SpecTask.new do |t|
+  t.spec_files = FileList['spec/**/*_spec.rb']
+  t.spec_opts = ['--options', 'spec/spec.opts']
 end

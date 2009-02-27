@@ -1,25 +1,42 @@
-# FIXME: this should be in a module that only gets loaded in integration tests
-# This monkeypatch currently makes it impossible to create isolated controller specs
-# that pass through exceptions (see “Expecting Errors” on
-# http://rspec.info/rdoc-rails/classes/Spec/Rails/Example/ControllerExampleGroup.html)
-ActionController::Base.class_eval do
-  def use_rails_error_handling_with_integration_support?
-    if Spec::Integration::DSL::IntegrationExample::during_integration_example
-      true
-    else
-      use_rails_error_handling_without_integration_support?
+module Spec
+  module Integration
+    module Extensions
+      
+      # The point of all this is to simply capture the exceptions of an action
+      # during an integration testing request (get, post, put, etc). This
+      # exception is later used in the navigation matcher to show the failure
+      # if navigation did not succeed due to an exception.
+      #
+      module ActionController
+        def self.included(base)
+          base.extend(ClassMethods)
+          base.metaclass.module_eval do
+            alias_method_chain :new, :integration_extensions
+          end
+        end
+        
+        module ClassMethods #:nodoc:
+          def new_with_integration_extensions(*args)
+            controller = new_without_integration_extensions(*args)
+            if Spec::Integration.executing_integration_example
+              controller.use_rails_error_handling!
+              controller.metaclass.module_eval do
+                attr_reader :rescued_exception
+                def rescue_action(e)
+                  @rescued_exception = e
+                  super
+                end
+              end
+            end
+            controller
+          end
+        end
+      end
+      
     end
   end
-  alias_method_chain :use_rails_error_handling?, :integration_support
-  
-  attr_reader :rescued_exception
-  def rescue_action_with_integration_support(e)
-    if Spec::Integration::DSL::IntegrationExample::during_integration_example
-      @rescued_exception = e
-      rescue_action_without_fast_errors e
-    else
-      rescue_action_without_integration_support e
-    end
-  end
-  alias_method_chain :rescue_action, :integration_support
+end
+
+ActionController::Base.module_eval do
+  include Spec::Integration::Extensions::ActionController
 end
