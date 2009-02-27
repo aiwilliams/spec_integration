@@ -84,7 +84,8 @@ module Spec
       # Performs _method_ on the specified path, ensuring that doing so was
       # successful. Will follow redirects.
       def navigate_to(path, method = :get, params = nil, options = {})
-        self.send method, path, params || {}, options
+        headers = options[:headers] || {}
+        self.send method, path, params || {}, headers
         follow_redirect! while response.redirect?
         response.should have_navigated_successfully(path)
       end
