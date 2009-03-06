@@ -42,7 +42,7 @@ module Spec
             violated "Form '#{selector}' has a file field named '#{name}', but the enctype is not multipart/form-data"
           end
           if matching_field.name == "select"
-            should have_tag(matching_field, "option[value=#{value}]")
+            response.should have_tag(matching_field, "option[value=#{value}]")
           end
         end
         form
