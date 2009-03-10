@@ -23,6 +23,9 @@ describe "submit_form", :type => :controller do
       <form action="/order" id="order_form" method="get"></form>
       <form action="/cancel" id="cancel_form" method="post"></form>
       <form action="/repeat" class="special" method="post"></form>
+      <form action="/upload" id="upload_form" method="post" enctype="multipart/form-data">
+        <input type="file" name="myfile[inhere]" />
+      </form>
     }
   end
   
@@ -47,6 +50,14 @@ describe "submit_form", :type => :controller do
   it "should use method of the rendered form" do
     should_receive(:get).with("/order", {}, an_instance_of(Hash))
     submit_form "order_form"
+  end
+  
+  it "should not disturb file field values" do
+    test_file = ActionController::TestUploadedFile.new(
+      File.dirname(__FILE__) + "/../spec.opts", "text/plain"
+    )
+    should_receive(:post).with("/upload", {"myfile" => {"inhere" => test_file}}, an_instance_of(Hash))
+    submit_form "upload_form", :myfile => {:inhere => test_file}
   end
   
   describe 'hidden fields' do

@@ -127,7 +127,7 @@ module Spec
       private
         def collect_form_params(values, form, fields, include_hidden = true)
           given_values = values.to_fields
-          overridden_array_field_names, form_params = [], []
+          overridden_array_field_names, string_form_params, file_form_params = [], [], []
           fields.each do |field|
             field_name = field['name']
             next if overridden_array_field_names.include?(field_name)
@@ -135,14 +135,22 @@ module Spec
             if submit.blank?
               if (field['type'] == 'hidden' && include_hidden) || field_name == '_method'
                 submit = [field['name'], field['value']]
-                form_params << submit
+                string_form_params << submit
               end
             else
-              overridden_array_field_names << field_name if field_name =~ /\[\]/
-              form_params.concat(submit)
+              if submit.size == 1 && ActionController::TestUploadedFile === submit.first.last
+                file_form_params.concat(submit)
+              else
+                overridden_array_field_names << field_name if field_name =~ /\[\]/
+                string_form_params.concat(submit)
+              end
             end
           end
-          Rack::Utils.parse_nested_query(form_params.collect {|k,v| "#{k}=#{v}"}.join('&'))
+          form_params = Rack::Utils.parse_nested_query(string_form_params.collect {|k,v| "#{k}=#{v}"}.join('&'))
+          file_form_params.each do |k,v|
+            Rack::Utils.normalize_params(form_params, k, v)
+          end
+          form_params
         end
       
     end
