@@ -80,9 +80,9 @@ describe "submit_form", :type => :controller do
     end
     
     it 'should submit only the values from the override when field is an array' do
-      @expected['deeply'] = {'not_overridden' => ['value'], 'overridden' => 'from_form'}
+      @expected['deeply'] = {'not_overridden' => ['value1', 'value2'], 'overridden' => 'from_form'}
       @expected['overridden'] = 'from_form'
-      submit_form :deeply => {:not_overridden => ['value']}
+      submit_form :deeply => {:not_overridden => ['value1', 'value2']}
     end
     
     it 'should exclude all but _method when :include_hidden is false' do

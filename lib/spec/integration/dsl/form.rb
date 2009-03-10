@@ -127,19 +127,20 @@ module Spec
       private
         def collect_form_params(values, form, fields, include_hidden = true)
           given_values = values.to_fields
-          array_field_names, form_params = [], []
+          overridden_array_field_names, form_params = [], []
           fields.each do |field|
             field_name = field['name']
-            submit = given_values.assoc(field_name)
-            if submit.nil?
-              if include_hidden || field_name == '_method'
+            next if overridden_array_field_names.include?(field_name)
+            submit = given_values.select {|k,v| k == field_name}
+            if submit.blank?
+              if (field['type'] == 'hidden' && include_hidden) || field_name == '_method'
                 submit = [field['name'], field['value']]
+                form_params << submit
               end
-            elsif field_name =~ /\[\]/
-              submit = nil if array_field_names.include?(field_name)
-              array_field_names << field_name 
+            else
+              overridden_array_field_names << field_name if field_name =~ /\[\]/
+              form_params.concat(submit)
             end
-            form_params << submit if submit
           end
           Rack::Utils.parse_nested_query(form_params.collect {|k,v| "#{k}=#{v}"}.join('&'))
         end
