@@ -79,7 +79,7 @@ describe "submit_form", :type => :controller do
       submit_form :overridden => 'not_from_form', :deeply => {:overridden => 'not_from_form'}
     end
     
-    it 'should remove in an array when overridden' do
+    it 'should submit only the values from the override when field is an array' do
       @expected['deeply'] = {'not_overridden' => ['value'], 'overridden' => 'from_form'}
       @expected['overridden'] = 'from_form'
       submit_form :deeply => {:not_overridden => ['value']}
@@ -112,9 +112,8 @@ describe 'Expectations about parsing query parameters: ' do
   end
   
   def parse_as(expected)
-    satisfy do |uri|
-      actual = ActionController::UrlEncodedPairParser.parse_query_parameters(URI.escape(uri))
-      actual == expected
+    simple_matcher(expected) do |uri|
+      Rack::Utils.parse_nested_query(URI.escape(uri)) == expected
     end
   end
 end

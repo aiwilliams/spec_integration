@@ -28,8 +28,8 @@ module Spec
         end
 
         form = forms[0]
+        form_fields = css_select form, "input, select, textarea"
         values.to_fields.each do |name, value|
-          form_fields = css_select form, "input, select, textarea"
           matching_field = form_fields.detect {|field| field["name"] == name || field["name"] == "#{name}[]"}
           violated "Could not find a form field having the name '#{name}'" unless matching_field
           if options[:verify_field_values]
@@ -45,7 +45,7 @@ module Spec
             response.should have_tag(matching_field, "option[value=#{value}]")
           end
         end
-        form
+        [form, form_fields]
       end
 
       # Submit a form to the application after verifying it exists in the
@@ -119,35 +119,29 @@ module Spec
           options.update(args.last)
         end
         
-        form = sees_form(selector, values, options)
+        form, fields = sees_form(selector, values, options)
         violated "Form '#{selector}' is missing an 'action' attribute" if form["action"].blank?
-        submit_to form["action"], load_hidden_fields(values, form, options[:include_hidden]), form["method"], options
+        submit_to form["action"], collect_form_params(values, form, fields, options[:include_hidden]), form["method"], options
       end
       
       private
-        def load_hidden_fields(values, form, include_hidden = true)
-          hiddens = css_select(form, "input[type=hidden]")
-          return values if hiddens.blank?
-          
-          hidden_values = hiddens.inject([]) do |memo,h|
-            memo << [h['name'], h['value']]; memo
-          end
-          
+        def collect_form_params(values, form, fields, include_hidden = true)
           given_values = values.to_fields
-          form_method = hidden_values.assoc("_method")
-          given_values << form_method if form_method
-          
-          if include_hidden
-            given_values.each do |fieldvalue|
-              fieldname = fieldvalue.first
-              hidden_values.delete_if do |hiddenvalue|
-                fieldname == hiddenvalue.first
+          array_field_names, form_params = [], []
+          fields.each do |field|
+            field_name = field['name']
+            submit = given_values.assoc(field_name)
+            if submit.nil?
+              if include_hidden || field_name == '_method'
+                submit = [field['name'], field['value']]
               end
+            elsif field_name =~ /\[\]/
+              submit = nil if array_field_names.include?(field_name)
+              array_field_names << field_name 
             end
-            given_values.concat(hidden_values)
+            form_params << submit if submit
           end
-          
-          ActionController::UrlEncodedPairParser.new(given_values).result
+          Rack::Utils.parse_nested_query(form_params.collect {|k,v| "#{k}=#{v}"}.join('&'))
         end
       
     end
