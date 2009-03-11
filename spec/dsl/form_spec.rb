@@ -69,10 +69,11 @@ describe "submit_form", :type => :controller do
     response.stub!(:body).and_return %{
       <form action="/special" method="get">
         <input type="text" name="myfield" />
+        <input type="text" name="mynumber" />
       </form>
     }
-    should_receive(:get).with("/special", {'myfield' => "my;special\nstuff"}, an_instance_of(Hash))
-    submit_form :myfield => "my;special\nstuff"
+    should_receive(:get).with("/special", {'myfield' => "my;special\nstuff", 'mynumber' => '1'}, an_instance_of(Hash))
+    submit_form :myfield => "my;special\nstuff", :mynumber => 1
   end
   
   describe 'hidden fields' do

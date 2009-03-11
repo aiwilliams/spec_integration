@@ -146,7 +146,7 @@ module Spec
               end
             end
           end
-          form_params = Rack::Utils.parse_nested_query(string_form_params.collect {|k,v| "#{k}=#{CGI.escape(v)}"}.join('&'))
+          form_params = Rack::Utils.parse_nested_query(string_form_params.collect {|k,v| "#{k}=#{CGI.escape(v.to_s)}"}.join('&'))
           file_form_params.each do |k,v|
             Rack::Utils.normalize_params(form_params, k, v)
           end
