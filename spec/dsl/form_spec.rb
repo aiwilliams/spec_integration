@@ -2,14 +2,9 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 describe "submit_form", :type => :integration do
   it 'should submit the form' do
-    with_routing do |set|
-      set.draw do |map|
-        map.connect '/', :controller => 'integration_dsl', :action => 'form'
-        get '/'
-        submit_form :key => 'value'
-        response.should_not be_nil
-      end
-    end
+    get '/form'
+    submit_form :key => 'value'
+    response.should_not be_nil
   end
 end
 

@@ -15,3 +15,13 @@ require 'rails/version'
 
 require 'spec/integration'
 require 'integration_dsl_controller'
+
+ActionController::Routing::Routes.draw do |map|
+  map.with_options :controller => 'integration_dsl' do |dsl|
+    dsl.root
+    dsl.connect '/caching_action', :action => 'caching_action'
+    dsl.connect '/exploding',      :action => 'exploding'
+    dsl.connect '/form',           :action => 'form'
+  end
+end
+

@@ -2,14 +2,9 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 describe "An integration spec", :type => :integration do
   it "should provide all the normal integration support" do
-    with_routing do |set|
-      set.draw do |map|
-        map.root :controller => 'integration_dsl'
-        get "/"
-        response.should_not be_nil
-        open_session.should_not == @integration_session
-      end
-    end
+    get "/"
+    response.should_not be_nil
+    open_session.should_not == @integration_session
     
     with_routing do |set|
       set.draw do |map|
