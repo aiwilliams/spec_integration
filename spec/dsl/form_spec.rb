@@ -52,6 +52,11 @@ describe "submit_form", :type => :controller do
     submit_form "order_form"
   end
   
+  it 'should use headers when provided' do
+    should_receive(:post).with("/cancel", {}, {:authorization => 'stuff'})
+    submit_form 'cancel_form', {}, :headers => {:authorization => 'stuff'}
+  end
+  
   it "should not disturb file field values" do
     test_file = ActionController::TestUploadedFile.new(
       File.dirname(__FILE__) + "/../spec.opts", "text/plain"
