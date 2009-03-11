@@ -65,6 +65,16 @@ describe "submit_form", :type => :controller do
     submit_form "upload_form", :myfile => {:inhere => test_file}
   end
   
+  it 'should handle values that have special characters' do
+    response.stub!(:body).and_return %{
+      <form action="/special" method="get">
+        <input type="text" name="myfield" />
+      </form>
+    }
+    should_receive(:get).with("/special", {'myfield' => "my;special\nstuff"}, an_instance_of(Hash))
+    submit_form :myfield => "my;special\nstuff"
+  end
+  
   describe 'hidden fields' do
     controller_name :integration_dsl
     
