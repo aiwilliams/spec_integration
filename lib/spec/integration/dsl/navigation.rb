@@ -37,6 +37,7 @@ module Spec
       #
       def click_on(options)
         response.should have_navigated_successfully
+        
         options = {
           :link => nil,
           :expects => {:count => ">= 1"},
@@ -44,8 +45,8 @@ module Spec
         }.update(options)
         
         href = nil
-        method = nil
-        anchors = find_anchors(options[:link], options[:expects])
+        method = options.delete(:method)
+        anchors = find_anchors(options.delete(:link), options.delete(:expects))
         if anchors.size == 1
           anchor = anchors.first
           if onclick = anchor["onclick"]
@@ -63,22 +64,21 @@ module Spec
           anchor = nil
           anchors.each do |a|
             onclick = a["onclick"]
-            if options[:method] == :get
+            if method == :get
               anchor = a unless onclick
             elsif onclick
               if onclick =~ /setAttribute\('name', '_method'\)/
                 onclick =~ /setAttribute\('value', '(get|put|delete|post)'\)/
-                anchor = a if $1.to_s == options[:method].to_s
+                anchor = a if $1.to_s == method.to_s
               else
                 violated "There is some funky onclick on that link: #{a["onclick"]}"
               end
             end
           end
-          violated "No anchor found with method #{option[:method]}" if anchor.nil?
+          violated "No anchor found having method='#{method}'" if anchor.nil?
           href = anchor["href"]
-          method = options[:method]
         end
-        navigate_to *[CGI.unescapeHTML(href), method].compact
+        navigate_to CGI.unescapeHTML(href), method, nil, options
       end
       
       # Performs _method_ on the specified path, ensuring that doing so was

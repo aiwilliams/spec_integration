@@ -31,3 +31,20 @@ describe "have_navigated_successfully", :type => :integration do
     end; end
   end
 end
+
+describe 'click_on', :type => :controller do
+  include Spec::Integration::DSL
+  include Spec::Integration::Matchers
+  controller_name :integration_dsl
+  
+  before do
+    response.stub!(:body).and_return %{
+      <a href="/somewhere">Somewhere</a>
+    }
+  end
+  
+  it 'should forward headers in the request' do
+    should_receive(:get).with('/somewhere', {}, {:authorization => 'stuff'})
+    click_on :link => '/somewhere', :headers => {:authorization => 'stuff'}
+  end
+end
