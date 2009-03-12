@@ -42,6 +42,7 @@ module Spec
       # you can pass in a whole +Hash+ for +url_for+ defining all your
       # paramaters.
       def cache_action(action, store_options = {})
+        Spec::Integration.ensure_caching_enabled
         action = { :action => action } unless action.is_a?(Hash)
         CacheAction.new(action, store_options, self)
       end

@@ -9,6 +9,14 @@ require 'spec/integration/example/integration_example_group'
 
 module Spec # :nodoc:
   module Integration # :nodoc:
+    
+    def ensure_caching_enabled
+      unless ActionController::Base.perform_caching
+        raise "ActiveRecord::Base.caches_action is not registering a caching filter when classes are loaded. Please modify your test environment file to have 'config.action_controller.perform_caching = true'."
+      end
+    end
+    module_function :ensure_caching_enabled
+    
   end
 end
 
