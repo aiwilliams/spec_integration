@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../spec_helper'
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "find_anchors", :type => :controller do
   include Spec::Integration::DSL

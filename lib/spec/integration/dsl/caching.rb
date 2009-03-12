@@ -9,10 +9,10 @@ module Spec
         prior_perform_caching = ActionController::Base.perform_caching
         ActionController::Base.perform_caching = true
         ActionController::Base.cache_store.reset
-        ActionController::Base.cache_store.read_cache = true
+        ActionController::Base.cache_store.perform_caching = true
         yield
       ensure
-        ActionController::Base.cache_store.read_cache = false
+        ActionController::Base.cache_store.perform_caching = false
         ActionController::Base.perform_caching = prior_perform_caching
       end
       

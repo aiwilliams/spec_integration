@@ -46,73 +46,29 @@ module Spec
               end
           end
           
-          # == Perform the actual caching
-          #
-          # This test cache store can actually cache content, but by default
-          # does not. If it caches and returns cached content this might affect
-          # your tests, forcing you to reset the cache for every test so as to
-          # get the desired behaviour.
-          #
-          # The default behaviour is set on creation of the TestStore by
-          # passing in a simple flag. You can, however, change this at run time
-          # like so:
-          #
-          #   @a = TestStore.new       # => caching is off
-          #   @a.read_cache = true     # => caching is on
-          #   
-          #   @b = TestStore.new(true) # => caching is on
-          #   @b.read_cache = false    # => caching is off
-          #
-          # When needed the cache can be cleared manually like so:
-          #
-          #   ActionController::Base.cache_store.reset
-          # 
           class TestStore < ActiveSupport::Cache::Store
+            attr_accessor :perform_caching
+            attr_reader :expired, :expiration_patterns, :cache
             
-            # Record of what the app tells us to cache
-            attr_reader :cached
-            
-            # Record of what the app tells us to expire
-            attr_reader :expired
-            
-            # Record of what the app tells us to expire via patterns
-            attr_reader :expiration_patterns
-            
-            # Cached data that could be returned
-            attr_reader :data
-            
-            # Setting to enable the returning of cached data.
-            attr_accessor :read_cache
-            
-            def initialize(do_read_cache = false) #:nodoc:
-              @data                = {}
-              @cached              = []
-              @expired             = []
-              @expiration_patterns = []
-              @read_cache          = do_read_cache
+            def initialize(perform_caching = false) #:nodoc:
+              @perform_caching = perform_caching
+              @cache, @writes = {}, {}
+              @expired, @expiration_patterns = [], []
             end
             
-            # Reset the cache store, effectively emptying the cache
             def reset
-              @data.clear
-              @cached.clear
-              @expired.clear
-              @expiration_patterns.clear
+              [@cache, @writes, @expired, @expiration_patterns].each(&:clear)
             end
             
             def read(name, options = nil) #:nodoc:
               super
-              read_cache ? @data[name] : nil
+              @cache[name] if perform_caching
             end
             
             def write(name, value, options = nil) #:nodoc:
               super
-              
-              # Actually store the data if desired
-              @data[name] = value if read_cache
-              
-              # Record this caching
-              @cached << name
+              @cache[name] = value if perform_caching
+              @writes[name] = options || {}
             end
             
             def delete(name, options = nil) #:nodoc:
@@ -125,15 +81,16 @@ module Spec
               @expiration_patterns << matcher
             end
             
-            # See if a given name was written to the cache
             def cached?(name)
-              @cached.include?(name)
+              @writes.has_key?(name)
             end
             
-            # See if a given name was expired from the cache, eiter directly or
-            # using an expiration pattern.
-            def expired?(name)
-              @expired.include?(name) || @expiration_patterns.detect { |matcher| name =~ matcher }
+            def expired?(name_or_matcher)
+              @expired.include?(name_or_matcher) || @expiration_patterns.detect { |matcher| name_or_matcher =~ matcher }
+            end
+            
+            def writes(name)
+              @writes[name]
             end
           end
           

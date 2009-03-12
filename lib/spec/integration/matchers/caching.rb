@@ -2,37 +2,32 @@ module Spec
   module Integration
     module Matchers
       
-      class CacheAction #:nodoc:
-        def initialize(name, controller_context)
-          @name = name
-          @controller_context = controller_context
-        end
-        
-        # Call the block of code passed to this matcher and see if
-        # our action has been written to the cache.
-        #
-        # We determine the +fragment_cache_key+ here, taking the effort to
-        # pass in the controller to this class, because this method only
-        # works in the context of a request. Calling the block gives us that
-        # request.
+      class CacheAction < Struct.new(:name, :store_options, :controller_context) #:nodoc:
         def matches?(block)
           ActionController::Base.cache_store.reset
           block.call
-          @key = @name.is_a?(String) ? @name : @controller_context.controller.fragment_cache_key(@name)
-          return ActionController::Base.cache_store.cached?(@key)
+          @key = name.is_a?(String) ? name : controller_context.controller.fragment_cache_key(name)
+          @cached = ActionController::Base.cache_store.cached?(@key)
+          @options_match = ActionController::Base.cache_store.writes(@key) == store_options
+          @cached && @options_match
         end
         
         def failure_message
-          reason = if ActionController::Base.cache_store.cached.any?
-            "the cache only has #{ActionController::Base.cache_store.cached.to_yaml}."
-          else
-            "the cache is empty."
+          reason = if @cached && !@options_match
+            "the store options expected:\n  #{store_options.inspect}\n" +
+            "do not match received:\n  #{ActionController::Base.cache_store.writes(@key).inspect}"
+          elsif !@cached
+            if ActionController::Base.cache_store.cache.any?
+              "the cache only has #{ActionController::Base.cache_store.cache.to_yaml}."
+            else
+              "the cache is empty."
+            end
           end
-          "Expected block to cache action #{@name.inspect} (#{@key}), but #{reason}"
+          "Expected block to cache action #{name.inspect} (#{@key}), but #{reason}"
         end
         
         def negative_failure_message
-          "Expected block not to cache action #{@name.inspect} (#{@key})"
+          "Expected block not to cache action #{name.inspect} (#{@key})"
         end
       end
       
@@ -46,9 +41,9 @@ module Spec
       # interpreted in the context of the current controller. Alternatively,
       # you can pass in a whole +Hash+ for +url_for+ defining all your
       # paramaters.
-      def cache_action(action)
+      def cache_action(action, store_options = {})
         action = { :action => action } unless action.is_a?(Hash)
-        CacheAction.new(action, self)
+        CacheAction.new(action, store_options, self)
       end
       
       # See if a fragment gets cached.

@@ -23,5 +23,7 @@ ActionController::Routing::Routes.draw do |map|
     dsl.connect '/exploding',      :action => 'exploding'
     dsl.connect '/form',           :action => 'form'
   end
+  map.connect '/caching/cache_store_params',
+    :controller => 'caching', :action => 'cache_store_params'
 end
 
