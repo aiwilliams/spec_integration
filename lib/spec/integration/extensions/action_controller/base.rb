@@ -8,35 +8,20 @@ module Spec
       # if navigation did not succeed due to an exception.
       #
       module ActionController
-        def self.included(base)
-          base.extend(ClassMethods)
-          base.metaclass.module_eval do
-            alias_method_chain :new, :integration_extensions
+        
+        module InstanceMethods #:nodoc:
+          attr_reader :rescued_exception
+          def rescue_action_locally(exception)
+            @rescued_exception = exception
+            super
           end
         end
         
-        module ClassMethods #:nodoc:
-          def new_with_integration_extensions(*args)
-            controller = new_without_integration_extensions(*args)
-            if Spec::Integration.executing_integration_example
-              controller.use_rails_error_handling!
-              controller.metaclass.module_eval do
-                attr_reader :rescued_exception
-                def rescue_action(e)
-                  @rescued_exception = e
-                  super
-                end
-              end
-            end
-            controller
-          end
-        end
       end
-      
     end
   end
 end
 
 ActionController::Base.module_eval do
-  include Spec::Integration::Extensions::ActionController
+  include Spec::Integration::Extensions::ActionController::InstanceMethods
 end

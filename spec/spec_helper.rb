@@ -13,6 +13,7 @@ require 'action_mailer'
 
 require 'rails/version'
 
+require 'spec'
 require 'spec/integration'
 require 'integration_dsl_controller'
 
